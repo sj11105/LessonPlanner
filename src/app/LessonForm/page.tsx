@@ -3,6 +3,8 @@ import { useState } from "react";
 import { jsPDF } from "jspdf";
 import { fetchLessonPlan } from "@/app/Geminiapi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LessonPlanForm() {
   const [topic, setTopic] = useState("");
@@ -14,10 +16,12 @@ export default function LessonPlanForm() {
   const [error, setError] = useState("");
   const [lessonPlan, setLessonPlan] = useState("");
   const [editableLessonPlan, setEditableLessonPlan] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleGenerateLesson = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     const formData = {
       topic,
@@ -35,6 +39,7 @@ export default function LessonPlanForm() {
       } else {
         setLessonPlan(result);
         setEditableLessonPlan(result);
+        setLoading(false);
       }
     } catch (err) {
       setError("An error occurred while generating the lesson plan.");
@@ -137,28 +142,46 @@ export default function LessonPlanForm() {
             Generate Lesson Plan
           </button>
         </form>
-        {lessonPlan && (
+        {loading ? (
+          // Skeleton Loader while waiting for the response
           <Card className="mt-6">
             <CardHeader>
               <CardTitle className="text-2xl text-blue-700">
-                Generated Lesson Plan
+                Generating Lesson Plan...
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <textarea
-                className="w-full min-h-[400px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                value={editableLessonPlan}
-                onChange={(e) => setEditableLessonPlan(e.target.value)}
-                rows={12}
-              />
-              <button
-                onClick={handleDownloadPDF}
-                className="mt-4 w-full p-3 bg-green-600 text-white rounded-md hover:bg-green-700"
-              >
-                Download PDF
-              </button>
+              <Skeleton className="h-6 w-3/4 mb-4" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-10 w-full mt-4" />
             </CardContent>
           </Card>
+        ) : (
+          lessonPlan && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-2xl text-blue-700">
+                  Generated Lesson Plan
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <textarea
+                  className="w-full min-h-[400px] p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  value={editableLessonPlan}
+                  onChange={(e) => setEditableLessonPlan(e.target.value)}
+                  rows={12}
+                />
+                <Button
+                  onClick={handleDownloadPDF}
+                  className="mt-4 w-full bg-green-600 hover:bg-green-700"
+                >
+                  Download PDF
+                </Button>
+              </CardContent>
+            </Card>
+          )
         )}
       </div>
     </div>
